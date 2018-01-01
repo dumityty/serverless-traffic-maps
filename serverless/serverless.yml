@@ -1,0 +1,58 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: traffic-map
+
+custom:
+  bucket_name: "BUCKET-NAME"
+  url_1: "http://traffic-maps.s3-website-eu-west-1.amazonaws.com?lat=LAT1&lon=LON1"
+  url_2: "http://traffic-maps.s3-website-eu-west-1.amazonaws.com?lat=LAT2&lon=LON2"
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  region: eu-west-1
+  stage: dev
+  profile: PROFILE_NAME
+
+  # you can add statements to the Lambda function's IAM Role here
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:ListBucket"
+        - "s3:Put*"
+        - "s3:GetObject"
+      Resource:
+        - "arn:aws:s3:::${self:custom.bucket_name}"
+        - "arn:aws:s3:::${self:custom.bucket_name}/*"
+
+functions:
+  screenshot:
+    handler: handler.screenshot
+    events:
+      - schedule:
+          rate: cron(*/5 7-8 ? * MON-FRI *)
+          enabled: true
+          input:
+            url: "${self:custom.url_1}"
+            place: "PLACE_1"
+      - schedule:
+          rate: cron(*/5 7-8 ? * MON-FRI *)
+          enabled: true
+          input:
+            url: "${self:custom.url_2}"
+            place: "PLACE_2"
